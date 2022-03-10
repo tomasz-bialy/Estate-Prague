@@ -7,6 +7,15 @@ import pandas as pd
 from datetime import date
 from github import Github
 
+try:
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    GITHUB_API_KEY = os.environ['GITHUB_API_KEY']
+    print('Loaded API key from .env file.')
+except:
+    print('Could not load API key from the .env file.')
+
 df = pd.DataFrame(columns=['Listing ID','Price','Latitude','Longitude','District'])
 
 current_page = 1
@@ -70,7 +79,7 @@ while current_page <= max_pages:
     current_page += 1 
 
 
-g = Github("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")
+g = Github(GITHUB_API_KEY)
 repository = g.get_user().get_repo('Estate-rental-market-in-Prague')
 filename = date.today().strftime("data-rental/Prague-%Y-%m-%d.csv")
 content = df.to_csv(encoding='utf-8',index=False)

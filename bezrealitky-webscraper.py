@@ -2,7 +2,7 @@ import requests
 import bs4
 import time
 import random
-import numpy as np
+import sys
 import pandas as pd
 from datetime import date
 from github import Github
@@ -49,13 +49,14 @@ while current_page <= max_pages:
             listings_in_page = soup.find_all(class_='product__link')
             print(f'Parsing page {current_page} of {max_pages}')
         except:
-            wait_time = wait_time+300
-            print(f'Error during parsing the data. Waiting {wait_time/60} minutes and will try again')
-            time.sleep(wait_time)
+            wait_time = wait_time+120
+            print(f'Error during parsing page {current_page}. Waiting {wait_time/60} minutes and will try again')
+            if wait_time >= 1800:
+                sys.exit("Too many trials. Arborting the script.")
+            else:
+                time.sleep(wait_time)
             continue
         break
-
-    print(f'Scraping page {current_page} of {max_pages}')
 
     for apartment in listings_in_page:
         while True:
@@ -89,9 +90,12 @@ while current_page <= max_pages:
                 df_single_listing = pd.DataFrame([dictionary_data])
                 df = pd.concat([df,df_single_listing],axis=0,ignore_index=True)
             except:
-                wait_time = wait_time+300
-                print(f'Error during parsing the data. Waiting {wait_time/60} minutes and will try again')
-                time.sleep(wait_time)
+                wait_time = wait_time+120
+                print(f'Error during parsing the url: {url2} at {current_page} page. Waiting {wait_time/60} minutes and will try again')
+                if wait_time >= 1800:
+                    sys.exit("Too many trials. Arborting the script.")
+                else:
+                    time.sleep(wait_time)
                 continue
             break
     current_page += 1 

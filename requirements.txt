@@ -1,0 +1,5 @@
+beautifulsoup4==4.9.3
+pandas==1.2.4
+requests==2.25.1
+PyGithub==1.55
+lxml==4.6.3

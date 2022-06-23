@@ -79,7 +79,7 @@ class Apartment(Page):
         
         if self.poi_json is not None:
             self.poi_names = [key for key in self.poi_json]
-            self.poi_values = [int(self.poi_json[key]['properties']['walkDistance']) for key in self.poi_names]
+            self.poi_values = [self.poi_json[key]['properties']['walkDistance'] for key in self.poi_names]
         else:  
             self.poi_names = []
             self.poi_values = []

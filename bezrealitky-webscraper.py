@@ -118,7 +118,7 @@ class Apartment(Page):
         return self.dictionary_data
 
 current_page = 1
-max_pages = 2
+max_pages = 999
 df = pd.DataFrame()
 
 while current_page <= max_pages:
@@ -128,8 +128,9 @@ while current_page <= max_pages:
             listing_page_url = URL.format(page_no=current_page)
             listing_page_ = ListingPage(url=listing_page_url)
             apartment_url_list = listing_page_.get_listing_urls()
-            # max_pages = listing_page_.get_max_pages()
+            max_pages = listing_page_.get_max_pages()
             logging.info(f'Parsing page {current_page} of {max_pages}')
+            print(f'Parsing page {current_page} of {max_pages}')
         except:
             wait_time = wait_time*2
             if wait_time >= 1200:

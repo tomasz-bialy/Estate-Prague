@@ -98,10 +98,10 @@ class Apartment(Page):
 
 current_page = 1
 max_pages = 999
-wait_time = 0
 df = pd.DataFrame()
 
 while current_page <= max_pages:
+    wait_time = 45
     while True:
         try:
             listing_page_url = URL.format(page_no=current_page)
@@ -110,9 +110,9 @@ while current_page <= max_pages:
             max_pages = listing_page_.get_max_pages()
             print(f'Parsing page {current_page} of {max_pages}')
         except:
-            wait_time = wait_time+300
+            wait_time = wait_time*2
             print(f'Error during parsing the listing page: {listing_page_url} at {current_page} page. Waiting {int(wait_time/60)} minutes and will try again')
-            if wait_time >= 1500:
+            if wait_time >= 1200:
                 # err2 = listing_page_.get_html()
                 sys.exit("Too many trials. Arborting the script.")
             else:
@@ -129,9 +129,9 @@ while current_page <= max_pages:
                 df_ = pd.DataFrame([apartment_parameters])
                 df = pd.concat([df,df_],axis=0,ignore_index=True)
             except:
-                wait_time = wait_time+300
+                wait_time = wait_time*2
                 print(f'Error during parsing the apartment: {apartment_url} at {current_page} page. Waiting {int(wait_time/60)} minutes and will try again')
-                if wait_time >= 1500:
+                if wait_time >= 1200:
                     # err1 = apartment_.get_html()
                     sys.exit("Too many trials. Arborting the script.")
                 else:

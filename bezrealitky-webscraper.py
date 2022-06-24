@@ -7,21 +7,29 @@ import json
 import pandas as pd
 from datetime import date
 from github import Github
+import logging
+import smtplib
+from email.message import EmailMessage
+
+logging.basicConfig(level=logging.INFO, filename='debug.log', filemode='w', format='%(asctime)s: %(message)s')
 
 try:
     import os
     from dotenv import load_dotenv
     load_dotenv()
+    logging.info('Loaded environmental variables from .env file.')
 except:
-    print('Could not load the .env file. Will try to load API key from environmental variable.')
+    logging.info('Could not load the .env file. However will try to load API key from environmental variable.')
 
 try:
+    GMAIL_PASS = os.environ['GMAIL_PASS']
     GITHUB_API_KEY = os.environ['GITHUB_API_KEY']
     g = Github(GITHUB_API_KEY)
-    print("Connected to GitHub via API key sucesfully.")
+    logging.info('Connected to GitHub via API key sucesfully.')
 except:
-    sys.exit("Cannot connect to GitHub - Arborting....")
-
+    logging.info("Cannot connect to GitHub. Arborting.")
+    sys.exit("Arborting.")
+    
 
 HEADERS = {
     'Connection': 'keep-alive',
@@ -47,8 +55,21 @@ class Page:
         self.response = requests.get(self.url,headers=HEADERS)
         self.soup = bs4.BeautifulSoup(self.response.text,"lxml")
     
-    def get_html(self):
-        return str(self.soup)
+    def send_email_report(self):
+        self.email = EmailMessage()
+        self.email['from'] = 'Python'
+        self.email['to'] = 't1.bialy@gmail.com'
+        self.email['subject'] = 'Heroku task failure.'
+        self.email.set_content("Bezrealitky webscraper failed. Debugging files attached.")
+        self.email.add_attachment(self.response.text,filename='debug.html')
+        with open('debug.log','r') as file:
+            self.email.add_attachment(file.read(), filename='debug.log')
+    
+        with smtplib.SMTP(host='smtp.gmail.com', port=587) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.login('sesq.python@gmail.com', GMAIL_PASS)
+            smtp.send_message(self.email)
 
 class ListingPage(Page):
     def get_max_pages(self):
@@ -108,14 +129,14 @@ while current_page <= max_pages:
             listing_page_ = ListingPage(url=listing_page_url)
             apartment_url_list = listing_page_.get_listing_urls()
             max_pages = listing_page_.get_max_pages()
-            print(f'Parsing page {current_page} of {max_pages}')
+            logging.info(f'Parsing page {current_page} of {max_pages}')
         except:
             wait_time = wait_time*2
-            print(f'Error during parsing the listing page: {listing_page_url} at {current_page} page. Waiting {int(wait_time/60)} minutes and will try again')
             if wait_time >= 1200:
-                # err2 = listing_page_.get_html()
+                listing_page_.send_email_report()
                 sys.exit("Too many trials. Arborting the script.")
             else:
+                logging.info(f'Error during parsing the listing page: {listing_page_url} at {current_page} page. Waiting {int(wait_time/60)} minutes and will try again')
                 time.sleep(wait_time)
             continue
         break
@@ -130,19 +151,20 @@ while current_page <= max_pages:
                 df = pd.concat([df,df_],axis=0,ignore_index=True)
             except:
                 wait_time = wait_time*2
-                print(f'Error during parsing the apartment: {apartment_url} at {current_page} page. Waiting {int(wait_time/60)} minutes and will try again')
                 if wait_time >= 1200:
-                    # err1 = apartment_.get_html()
-                    sys.exit("Too many trials. Arborting the script.")
+                    logging.exception(f'Too many unsuccessful trials during parsing the apartment: {apartment_url} at {current_page} page.')
+                    apartment_.send_email_report()
+                    sys.exit("Arborting the script.")
                 else:
+                    logging.info(f'Error during parsing the apartment: {apartment_url} at {current_page} page. Waiting {int(wait_time/60)} minutes and will try again')
                     time.sleep(wait_time)
                 continue
             break
 
     current_page = current_page + 1
 
-
 repository = g.get_user().get_repo('Estate-rental-market-in-Prague')
 filename = date.today().strftime("data-rental/Prague-%Y-%m-%d.csv")
 content = df.to_csv(encoding='utf-8',index=False)
 f = repository.create_file(filename, "Uploaded with PyGithub, deployed via Heroku", content)
+logging.info('Finished successfully.')

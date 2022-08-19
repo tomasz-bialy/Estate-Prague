@@ -102,3 +102,5 @@ repository = g.get_user().get_repo('Estate-rental-market-in-Prague')
 filename = date.today().strftime("data-rental/Prague-%Y-%m-%d.csv")
 content = df.to_csv(encoding='utf-8',index=False)
 f = repository.create_file(filename, "Uploaded with PyGithub, deployed via Heroku", content)
+
+# git push heroku heroku-branch:master

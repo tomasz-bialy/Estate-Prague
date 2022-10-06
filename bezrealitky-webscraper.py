@@ -96,7 +96,7 @@ class Apartment(Page):
 
         self.gps_json = json.loads(self.soup.find("script",{"id" : "__NEXT_DATA__"}).contents[0])
 
-        self.poi_json = json.loads(self.gps_json["props"]["pageProps"]["advert"]["poiData"])
+        self.poi_json = json.loads(self.gps_json["props"]["pageProps"]["origAdvert"]["poiData"])
         
         if self.poi_json is not None:
             self.poi_names = [key for key in self.poi_json]
@@ -112,8 +112,8 @@ class Apartment(Page):
 
         self.dictionary_data['District'] = self.soup.find("span",{"class" : "PropertyAttributes_propertyAttributesItem__kscom"}).text
 
-        self.dictionary_data['Latitude'] = self.gps_json["props"]["pageProps"]["advert"]["gps"]["lat"]
-        self.dictionary_data['Longitude'] = self.gps_json["props"]["pageProps"]["advert"]["gps"]["lng"]
+        self.dictionary_data['Latitude'] = self.gps_json["props"]["pageProps"]["origAdvert"]["gps"]["lat"]
+        self.dictionary_data['Longitude'] = self.gps_json["props"]["pageProps"]["origAdvert"]["gps"]["lng"]
 
         return self.dictionary_data
 

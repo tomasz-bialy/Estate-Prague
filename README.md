@@ -6,5 +6,5 @@ The aim of the project was to predict the apartment rental prices in Prague and 
 * Beautiful Soup (Parsing)
 * Heroku (Clould deployment)
 * PyGithub (Data transfer)
-* Scikit learn (Gradient Boosted Trees regression)
+* Scikit learn / XGBoost (Machine Learning)
 * Nominatim (Map Visualization)
